@@ -1,7 +1,10 @@
 # DevSecOps - Groupe 10
 
-#### Membres : Zakaria Aribi, Zakaria Mouada, Jihane Diouri
-
+### Membres du Groupe
+* **Zakaria Aribi**
+* **Zakaria Mouada**
+* **Jihane Diouri**
+  
 Ce dépôt regroupe l'ensemble des workshops réalisés dans le cadre du module DevSecOps :
 
 ---
