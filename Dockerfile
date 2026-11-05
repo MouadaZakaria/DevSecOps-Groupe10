@@ -1,18 +1,11 @@
-# Utilisation d'une image Python légère
-FROM python:3.9-slim
-
-# Répertoire de travail
+# 1. Outdated base image with known CVEs
+FROM python:3.8-slim
 WORKDIR /app
-
-# Installation de Flask et de l'outil ping pour l'exercice d'injection
-RUN apt-get update && apt-get install -y iputils-ping && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir flask
-
-# Copie de l'application
+# 2. Hardcoded secret (Trivy secret scan detection)
+ENV AWS_SECRET_KEY="AKIAIOSFODNN7ASDFGHJ"
+# 3. Unnecessary network tools
+RUN apt-get update && apt-get install -y curl wget net-tools
 COPY vulnerable_app.py .
-
-# Exposition du port
+# 4. Runs as root by default (Misconfiguration detection)
 EXPOSE 5000
-
-# Lancement de l'application
 CMD ["python", "vulnerable_app.py"]
