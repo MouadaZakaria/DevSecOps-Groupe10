@@ -1,0 +1,49 @@
+name: "Workshop 5 - Trivy Container Security Gate"
+
+on:
+  push:
+    branches: [ "workshop5" ]
+  pull_request:
+    branches: [ "workshop5" ]
+  workflow_dispatch:
+
+jobs:
+  trivy-scan:
+    name: Build & Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Application Image
+        run: |
+          docker build -t workshop5-app:${{ github.sha }} .
+
+      - name: Trivy - Informational Vulnerability Scan (CVEs)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'workshop5-app:${{ github.sha }}'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+
+      - name: Trivy - Dockerfile Misconfiguration Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '0'
+
+      - name: Enforce Security Gate (Block on HIGH & CRITICAL)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'workshop5-app:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
