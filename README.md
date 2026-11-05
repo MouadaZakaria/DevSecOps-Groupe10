@@ -4,8 +4,6 @@
 * **Zakaria Aribi**
 * **Zakaria Mouada**
 * **Jihane Diouri**
-  
-Ce dépôt regroupe l'ensemble des workshops réalisés dans le cadre du module DevSecOps :
 
 ---
 
@@ -15,10 +13,13 @@ Ce dépôt regroupe l'ensemble des workshops réalisés dans le cadre du module 
   * Détection des vulnérabilités dans le code source et intégration CI/CD.
 
 * 📦 **[Workshop 3 : Sécurité des Dépendances (SCA)](https://github.com/MouadaZakaria/DevSecOps-Groupe10/tree/workshop3)**
-  * Détection avec OWASP Dependency-Check et mises à jour automatiques avec Dependabot.
+  * Détection avec OWASP Dependency-Check et gestion automatisée avec Dependabot.
 
-* 🛡️ **[Workshop 4 : Sécurité des Conteneurs & DAST](https://github.com/MouadaZakaria/DevSecOps-Groupe10/tree/workshop4)**
-  * Analyse d'images Docker avec Trivy et scan dynamique avec OWASP ZAP.
+* 🛡️ **[Workshop 4 : Sécurité Dynamique (DAST)](https://github.com/MouadaZakaria/DevSecOps-Groupe10/tree/workshop4)**
+  * Scan dynamique DAST des applications web via OWASP ZAP.
+
+* 🐳 **[Workshop 5 : Sécurité des Conteneurs avec Trivy](https://github.com/MouadaZakaria/DevSecOps-Groupe10/tree/workshop5)**
+  * Audit CVE, détection de secrets, durcissement Docker et Security Gate CI/CD.
 
 ---
-*Consultez chaque branche respective pour visualiser le code source, les pipelines CI/CD et les rapports d'exécution détaillés.*
+*Basculez sur chaque branche pour consulter le code source, les workflows CI/CD (`.github/workflows/`), ainsi que les rapports d'exécution détaillés.*
