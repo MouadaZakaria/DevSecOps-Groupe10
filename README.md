@@ -1,110 +1,59 @@
-# Workshop 4 : Tests de Sécurité Dynamiques (DAST) et Pentest Automatisé
-**Groupe :** 10
-**Membres :** Zakaria Aribi , Zakaria Mouada , Jihane Diouri
-## Objectif
-Découvrir et utiliser **OWASP ZAP** pour identifier les failles de sécurité d'une application web en cours d'exécution. Ce workshop complète les analyses statiques (SAST) vues dans les workshops précédents en testant l'application d'un point de vue extérieur.
+# Workshop 5 : Sécurisation des Images Docker avec Trivy
 
-## 1. Pré-requis
-- **Docker** installé et fonctionnel.
-- Application de test vulnérable (fournie dans ce dossier).
+### Membres du Groupe 10
+* **Zakaria Aribi** (Audit initial, détection des CVEs, secrets et mauvaises configurations)
+* **Jihane Diouri** (Durcissement du Dockerfile, remédiation et réduction de surface d'attaque)
+* **Zakaria Mouada** (Pipeline CI/CD DevSecOps, automatisation de la Security Gate et rapport)
 
-## 2. Préparation de l'application cible
-Pour ce workshop, nous utilisons une application Flask délibérément vulnérable (basée sur le Workshop 2).
+---
 
-### Étapes pour lancer l'application :
-1. Construire l'image Docker de l'application :
-   ```bash
-   docker build -t vulnerable-app .
-   ```
-2. Lancer le conteneur :
-   ```bash
-   docker run -d -p 5000:5000 --name my-vulnerable-app vulnerable-app
-   ```
-   L'application est maintenant accessible sur `http://localhost:5000`.
+## 1. Objectifs du Workshop
+* Utiliser **Trivy** pour analyser une image Docker afin d’identifier les vulnérabilités (CVE), les mauvaises configurations et les secrets exposés.
+* Interpréter les résultats du scan en se focalisant sur les sévérités **HIGH** et **CRITICAL**.
+* Proposer et appliquer des actions de remédiation concrètes (mise à jour d'image de base, passage en utilisateur non-root, suppression des dépendances superflues).
+* Intégrer Trivy dans un pipeline CI/CD GitHub Actions avec un seuil de blocage (*Security Gate*) automatisé.
 
-![Build Docker](screenshots/section2-1.png)
-![Lancement Conteneur](screenshots/section2-2.png)
-![Accès Application](screenshots/section2-3.png)
+---
 
-## 3. Scan Baseline (Passif)
-Le scan baseline effectue une exploration passive de l'application pour détecter des problèmes de configuration, des headers manquants ou des cookies non sécurisés.
+## 2. Phase 1 : Audit Initial & Détection des Risques
 
-### Commande Docker pour ZAP Baseline :
-**Sur Linux/macOS (Bash) :**
-```bash
-docker run --rm -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-    -t http://host.docker.internal:5000 \
-    -r zap_report.html
-```
+### A. Scénario Vulnérable Initial
+L'analyse initiale a été réalisée sur un conteneur basé sur une image non durcie (`python:3.8-slim`) présentant plusieurs risques de sécurité :
+* Exécution sous les privilèges administrateur (`root`).
+* Présence d'outils réseaux superflus (`curl`, `wget`, `net-tools`).
+* Clés d'API exposées en clair dans les variables d'environnement.
 
-**Sur Windows (PowerShell) :**
-```powershell
-docker run --rm -v ${PWD}:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py `
-    -t http://host.docker.internal:5000 `
-    -r zap_report.html
-```
-*Note : Sur Windows/Mac, utilisez `host.docker.internal` pour pointer vers votre machine hôte depuis le conteneur Docker.*
+### B. Résultats des Scans Trivy
+1. **Scan des vulnérabilités de packages (CVEs HIGH & CRITICAL) :**
+   ![Scan initial des vulnérabilités](screenshots/01_trivy_image_cve.png)
 
-![Exécution ZAP Baseline 1](screenshots/section3-1.png)
-![Exécution ZAP Baseline 2](screenshots/section3-2.png)
-![Exécution ZAP Baseline 3](screenshots/section3-3.png)
+2. **Scan des mauvaises configurations (*Misconfigurations*) :**
+   ![Scan des configurations](screenshots/02_trivy_misconfig.png)
 
-### Observations attendues :
-- Analyse du rapport `zap_report.html`.
-- Identification des cookies sans attribut `HttpOnly` ou `Secure`.
-- Identification des headers de sécurité manquants (ex: `X-Frame-Options`, `Content-Security-Policy`).
+3. **Détection des secrets exposés (*Secret Scanning*) :**
+   ![Détection de secrets](screenshots/03_trivy_secrets.png)
 
-![Rapport Baseline 1](screenshots/section3-4.png)
-![Rapport Baseline 2](screenshots/section3-5.png)
+---
 
-## 4. Scan Actif (Pentest Automatisé)
-Le scan actif tente d'attaquer l'application en envoyant des payloads pour détecter des failles réelles comme l'Injection SQL ou le XSS. **À ne faire que sur des environnements de test.**
+## 3. Phase 2 : Remédiation & Durcissement (Hardening)
 
-### Commande pour le Scan Full (Actif) :
-**Sur Linux/macOS (Bash) :**
-```bash
-docker run --rm -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py \
-    -t http://host.docker.internal:5000 \
-    -r zap_full_report.html
-```
+Mesures de durcissement appliquées dans le `Dockerfile` :
+1. **Migration vers une image minimale :** Utilisation de `python:3.11-alpine`.
+2. **Utilisateur non-privilégié (*Non-root user*) :** Création et attribution de l'exécution à l'utilisateur système `appuser`.
+3. **Réduction de la surface d'attaque :** Nettoyage des variables d'environnement sensibles et suppression des paquets d'outils de build (`setuptools`, `wheel`) contenant des CVEs élevées.
 
-**Sur Windows (PowerShell) :**
-```powershell
-docker run --rm -v ${PWD}:/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py `
-    -t http://host.docker.internal:5000 `
-    -r zap_full_report.html
-```
+### Résultat du Scan après Durcissement :
+![Scan après durcissement CVE](screenshots/04_trivy_remediation_clean.png)
+![Scan après durcissement Config](screenshots/05_trivy_config_clean.png)
 
-![Exécution Scan Actif 1](screenshots/section4-1.png)
-![Exécution Scan Actif 2](screenshots/section4-2.png)
+---
 
-### Résultats détectés sur `vulnerable_app.py` :
-ZAP devrait détecter automatiquement :
-- **Cross-Site Scripting (XSS)** sur la route `/hello?name=...`.
-- **SQL Injection** sur la route `/user?username=...`.
-- **Command Injection** possible sur `/ping?ip=...`.
+## 4. Phase 3 : Intégration CI/CD & Security Gate
 
-![Résultats Scan Actif](screenshots/section4-3.png)
+Pour bloquer automatiquement tout déploiement non sécurisé, un pipeline GitHub Actions a été configuré (`.github/workflows/trivy.yml`) :
+* Déclenchement automatique à chaque `push` ou `pull_request` sur la branche `workshop5`.
+* Compilation de l'image Docker à partir du code source.
+* **Seuil de blocage (*Security Gate*) :** Échec immédiat du build (`exit-code: 1`) si des vulnérabilités de niveau **HIGH** ou **CRITICAL** sont détectées.
 
-## 5. Intégration dans un pipeline CI/CD
-Pour automatiser le DAST, ZAP peut être intégré dans GitHub Actions ou GitLab CI :
-
-```yaml
-# Exemple simplifié pour GitHub Actions
-zap_scan:
-  runs-on: ubuntu-latest
-  name: Scan the web application
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.6.0
-      with:
-        target: 'https://votre-site-de-test.com'
-```
-
-## 6. Discussion des risques et bonnes pratiques
-- **Risques** : Le scan actif peut corrompre les données ou faire tomber le service (DoS). Toujours scanner une instance de pré-prod isolée.
-- **DAST vs SAST** : Le SAST trouve les erreurs dans le code source (Workshop 2/3), le DAST trouve les failles exploitables en production (Workshop 4).
-- **Remédiation** : Les résultats de ZAP doivent être priorisés et corrigés (ex: utiliser des requêtes préparées pour le SQL, échapper les sorties pour le XSS).
-# workshop4-groupe-10
+### Validation du Pipeline CI/CD :
+![Succès du Pipeline CI/CD](screenshots/06_github_actions_trivy.png)
