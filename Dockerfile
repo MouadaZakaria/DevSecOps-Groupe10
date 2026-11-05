@@ -1,11 +1,12 @@
-# 1. Outdated base image with known CVEs
-FROM python:3.8-slim
+FROM python:3.11-alpine
+
 WORKDIR /app
-# 2. Hardcoded secret (Trivy secret scan detection)
-ENV AWS_SECRET_KEY="AKIAIOSFODNN7ASDFGHJ"
-# 3. Unnecessary network tools
-RUN apt-get update && apt-get install -y curl wget net-tools
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 COPY vulnerable_app.py .
-# 4. Runs as root by default (Misconfiguration detection)
+
+USER appuser
+
 EXPOSE 5000
 CMD ["python", "vulnerable_app.py"]
