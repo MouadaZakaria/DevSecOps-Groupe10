@@ -21,5 +21,7 @@
 * 🐳 **[Workshop 5 : Sécurité des Conteneurs avec Trivy](https://github.com/MouadaZakaria/DevSecOps-Groupe10/tree/workshop5)**
   * Audit CVE, détection de secrets, durcissement Docker et Security Gate CI/CD.
 
+* 🚨 **[Workshop 6 : Supervision et détection des menaces avec Wazuh](https://github.com/MouadaZakaria/DevSecOps-Groupe10/tree/workshop6)**
+  * Déploiement Docker de Wazuh, détection de force brute SSH et d'élévation de privilèges, analyse des CVE.
 ---
 *Basculez sur chaque branche pour consulter le code source, les workflows CI/CD (`.github/workflows/`), ainsi que les rapports d'exécution détaillés.*
