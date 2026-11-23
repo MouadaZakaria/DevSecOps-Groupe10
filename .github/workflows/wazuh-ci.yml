@@ -1,0 +1,28 @@
+name: "Workshop 6 - Wazuh Infrastructure Validation"
+
+on:
+  push:
+    branches: [ "workshop6" ]
+  workflow_dispatch:
+
+jobs:
+  validate-stack:
+    name: Validate Docker Compose & Security Configs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Syntax
+        run: |
+          docker compose config -q
+          echo "Docker Compose configuration is valid."
+
+      - name: Verify Wazuh SIEM & Agent Definitions
+        run: |
+          grep -q "wazuh.manager" docker-compose.yml
+          grep -q "wazuh.indexer" docker-compose.yml
+          grep -q "wazuh.dashboard" docker-compose.yml
+          grep -q "ubuntu-agent" docker-compose.yml
+          echo "All Wazuh SIEM and target agent services verified."
